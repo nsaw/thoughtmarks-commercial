@@ -24,6 +24,55 @@ jobs:
         run: |
           mkdir -p distributions/windows-installers
           mkdir -p build-logs
+          mkdir -p clean-tier-packages
+      
+      - name: Generate clean tier packages
+        run: |
+          echo 'BRUTAL: Generating clean tier packages for Windows installers...'
+          $tiers = 'free','pro','team','enterprise'
+          
+          foreach ($tier in $tiers) {
+            echo "Creating clean package for $tier..."
+            $sourceDir = "tier-packages/thoughtpilot-$tier"
+            $destDir = "clean-tier-packages/thoughtpilot-$tier"
+            
+            if (Test-Path $sourceDir) {
+              # Create destination directory
+              New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+              
+              # Copy files excluding DEV content
+              Get-ChildItem -Path $sourceDir -Recurse | Where-Object {
+                $_.Name -notmatch '\.(md|json|log)$' -and
+                $_.Name -notmatch 'summary-' -and
+                $_.Name -notmatch 'patch-' -and
+                $_.Name -notmatch '\.cursor-cache' -and
+                $_.Name -notmatch '\.logs' -and
+                $_.Name -notmatch '\.heartbeat'
+              } | ForEach-Object {
+                $relativePath = $_.FullName.Substring($sourceDir.Length + 1)
+                $destPath = Join-Path $destDir $relativePath
+                
+                if ($_.PSIsContainer) {
+                  New-Item -ItemType Directory -Path $destPath -Force | Out-Null
+                } else {
+                  $destDirPath = Split-Path $destPath -Parent
+                  if (!(Test-Path $destDirPath)) {
+                    New-Item -ItemType Directory -Path $destDirPath -Force | Out-Null
+                  }
+                  Copy-Item $_.FullName $destPath -Force
+                }
+              }
+              
+              $fileCount = (Get-ChildItem -Path $destDir -Recurse -File).Count
+              $size = (Get-ChildItem -Path $destDir -Recurse -File | Measure-Object -Property Length -Sum).Sum
+              echo "✅ $tier clean package created: $fileCount files ($size bytes)"
+            } else {
+              echo "❌ Source directory not found: $sourceDir"
+              exit 1
+            }
+          }
+          
+          echo "✅ All clean tier packages generated successfully"
       
       - name: Build .exe installers for all tiers
         run: |
