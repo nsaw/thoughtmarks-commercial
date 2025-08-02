@@ -1,0 +1,1 @@
+{"name": "team-demo-patch", "version": "1.0.0", "description": "Team tier demo patch with CI/CD pipeline", "target": "team", "mutations": {"shell": ["echo \"Team tier demo patch executed\"", "echo \"CI/CD pipeline available\"", "echo \"Multi-user support enabled\"]}}

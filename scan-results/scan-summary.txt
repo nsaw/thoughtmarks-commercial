@@ -1,0 +1,11 @@
+Personal Data Scan Summary - Fri Aug  1 00:00:35 PDT 2025
+email-addresses:       53
+personal-names:     1633
+file-paths:     2298
+api-keys:        0
+slack-tokens:       23
+github-tokens:        0
+database-credentials:        0
+ip-addresses:        0
+personal-urls:      204
+config-files:        8

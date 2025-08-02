@@ -1,0 +1,1 @@
+{"name": "pro-demo-patch", "version": "1.0.0", "description": "Pro tier demo patch with Slack workflow", "target": "pro", "mutations": {"shell": ["echo \"Pro tier demo patch executed\"", "echo \"Slack integration available\""]}}

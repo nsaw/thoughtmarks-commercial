@@ -1,0 +1,723 @@
+<!-- Next-Gen Dashboard (compact, dark, glass-morphism, mobile-first) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GHOST RUNNER — NextGen Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#232529; --pnl:#19233153; --brd:#a5a5d64e;
+      --txt:#3e9fe4f5; --sub:#d3dce7; --sub2:#818181; --head1:#babad3c0; --head2:#c2c2ff;
+      --ok:#14936693; --warn:#f8a3249d; --err:#df131379;
+      --grad:linear-gradient(135deg,#153d2f 0%,#1b637b 100%);
+      --glass-shadow:0 8px 32px 0 rgba(1, 2, 16, 0.569);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Ubuntu,sans-serif;background:var(--bg);color:var(--txt);line-height:1.75}
+    h1{font-size:clamp(1.2rem,4vw,1.5rem);font-weight:900;text-align:center;
+       margin:6px 0;background:var(--grad);-webkit-background-clip:text;color:transparent}
+    h3{font-size:clamp(1rem,3vw,0.9rem);color:var(--sub);text-align:center;text-transform:lowercase;font-weight:400;margin-bottom:16px}
+    .wrap{max-width:430px;margin:auto;padding:clamp(10px,3vw,28px)}
+    .grid{display:grid;gap:clamp(14px,2vw,24px)}
+    .card{background:var(--pnl);backdrop-filter:blur(14px);border:1px solid var(--brd);
+          border-radius:14px;padding:20px;box-shadow:var(--glass-shadow);
+          transition:transform .25s ease}
+    .card:hover{transform:translateY(-4px)}
+    .card h2{font-size:1.05rem;margin-bottom:.9rem;text-transform:uppercase;color:var(--head2);font-weight:600}
+    .metric{display:flex;justify-content:space-between;align-items:center;
+            padding:6px 0;border-bottom:1px solid var(--brd);font-size:.83rem}
+    .metric:last-child{border:none}
+    .dot{width:10px;height:10px;border-radius:50%;display:inline-block;background:var(--sub)}
+    .ok{background:var(--ok)}.warn{background:var(--warn)}.err{background:var(--err)}
+    pre{font-family:monospace;font-size:.75rem;white-space:pre-wrap;
+        max-height:200px;overflow:auto;margin-top:.6rem;padding:8px;
+        background:var(--pnl);border:1px solid var(--brd);border-radius:10px}
+    button{all:unset;cursor:pointer;padding:.5rem 1rem;background:var(--grad);
+           border-radius:8px;font-weight:600;color:#000;display:inline-block;margin-top:.8rem}
+    .section-title{margin:24px 0 12px;color:var(--sub);font-size:.9rem;letter-spacing:.5px;text-align:center}
+    ul.generic-list { list-style:none; padding:0; margin:0; }
+    .generic-list li { padding:6px 0; border-bottom:1px solid var(--brd); font-size:.85rem;
+      display:flex; justify-content:space-between; align-items:center; white-space:nowrap; }
+    .generic-list li:last-child { border:none; }
+    .list-id { font-family:monospace; color:var(--txt); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%; }
+    .list-time { color:var(--sub); font-size:.75rem; flex-shrink:0; }
+    .status-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-top:10px; }
+    .status-card { background:var(--pnl); border-radius:8px; padding:10px; border:1px solid var(--brd); text-align:center; }
+    .telemetry-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-top:10px; }
+    .telemetry-card { background:var(--pnl); border-radius:8px; padding:12px; border:1px solid var(--brd); }
+    .telemetry-card h4 { margin:0 0 8px 0; color:var(--head2); font-size:0.8rem; text-transform:uppercase; }
+    .telemetry-metric { display:flex; justify-content:space-between; align-items:center; padding:4px 0; font-size:0.75rem; }
+    .telemetry-value { font-weight:bold; color:var(--txt); }
+    .telemetry-label { color:var(--sub); }
+    .status-card h3 { margin-bottom:8px; color:var(--txt); font-size:.8rem; }
+    .status-indicator { font-size:1rem; font-weight:bold; padding:6px; border-radius:4px; transition:all .3s ease; }
+    .status-indicator.status-ok { background:var(--ok); color:#0cea4f; }
+    .status-indicator.status-error { background:var(--err); color:#fff; }
+    .status-indicator.status-unknown { background:var(--warn); color:#000; }
+    .agent-section { background:var(--pnl); border-radius:8px; padding:15px; border:1px solid var(--brd); margin-bottom:15px; }
+    .agent-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .agent-name { font-weight:bold; color:var(--ok); font-size:1rem; }
+    .agent-status { padding:4px 8px; border-radius:4px; font-size:.75rem; font-weight:600; }
+    .agent-status.healthy { background:var(--ok); color:#09e04a; }
+    .agent-status.pending { background:var(--warn); color:#000; }
+    .agent-status.stopped { background:var(--err); color:#fff; }
+    .agent-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(80px,1fr)); gap:8px; margin-bottom:10px; }
+    .agent-metric { text-align:center; padding:6px; background:var(--bg); border-radius:4px; }
+    .agent-metric-label { font-size:.7rem; color:var(--sub); margin-bottom:2px; }
+    .agent-metric-value { font-size:1rem; font-weight:bold; color:var(--txt); }
+    .loading { text-align:center; padding:20px; color:var(--sub); }
+    .error-message { background:var(--err); color:#fff; padding:10px; border-radius:5px; margin:10px 0; }
+    .agent-subsection { margin-top: 15px; }
+    .agent-subsection h4 { color: var(--head1); font-weight: 400; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>GHOST RUNNER</h1>
+    <h3>[ dual-agent dashboard ]</h3>
+
+    <!-- Overall health -->
+    <div class="metric" style="margin-bottom:2px">
+      <span>Overall</span><span id="overallDot" class="dot sub"></span>
+    </div>
+
+    <!-- CYOPS / DEV -->
+    <div class="section-title">CYOPS / DEV [ HEALTH + STATUS ]</div>
+    <div class="grid" id="cyopsGrid"></div>
+
+    <!-- MAIN / BRAUN -->
+    <div class="section-title">MAIN / BRAUN [ HEALTH + STATUS ]</div>
+    <div class="grid" id="mainGrid"></div>
+
+    <!-- Shared Services -->
+    <div class="section-title">GHOST | SYSTEMS | METRICS | STATUS</div>
+    <div class="grid">
+      <!-- Component Health -->
+      <div class="card">
+        <h2>⚙️ Component Health</h2>
+        <div class="status-grid">
+          <div class="status-card">
+            <h3>Fly.io</h3>
+            <div id="health-fly" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>Webhook Tunnel</h3>
+            <div id="health-tunnel-webhook" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>Dashboard Tunnel</h3>
+            <div id="health-tunnel-dashboard" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>Flask</h3>
+            <div id="health-flask" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>BRAUN DAEMON</h3>
+            <div id="health-braun" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>Ghost Runner</h3>
+            <div id="health-ghost" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>Patch Executor</h3>
+            <div id="health-executor" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>Dashboard Uplink</h3>
+            <div id="health-uplink" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>Summary Watcher</h3>
+            <div id="health-watcher" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>Comprehensive Dashboard</h3>
+            <div id="health-comprehensive" class="status-indicator">…</div>
+          </div>
+          <!-- Ghost 2.0 Advanced Capabilities -->
+          <div class="status-card">
+            <h3>🤖 Autonomous Decision</h3>
+            <div id="health-autonomous-decision-daemon" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>📊 Telemetry Orchestrator</h3>
+            <div id="health-telemetry-orchestrator-daemon" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>📈 Metrics Aggregator</h3>
+            <div id="health-metrics-aggregator-daemon" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>🚨 Alert Engine</h3>
+            <div id="health-alert-engine-daemon" class="status-indicator">…</div>
+          </div>
+          <div class="status-card">
+            <h3>📝 Enhanced Doc Daemon</h3>
+            <div id="health-enhanced-doc-daemon" class="status-indicator">…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Telemetry Dashboard -->
+      <div class="card">
+        <h2>📊 Telemetry Dashboard</h2>
+        <div style="margin-bottom: 10px;">
+          <button onclick="updateTelemetryDashboard()" style="background: var(--pnl); border: 1px solid var(--brd); color: var(--txt); padding: 5px 10px; border-radius: 4px; font-size: 0.8rem;">🔄 Refresh Telemetry</button>
+        </div>
+        <div class="telemetry-grid" id="telemetry-dashboard">
+          <!-- Telemetry cards will be populated here -->
+        </div>
+      </div>
+
+      <!-- Alert Engine Dashboard -->
+      <div class="card">
+        <h2>🚨 Alert Engine Dashboard</h2>
+        <div style="margin-bottom: 10px;">
+          <button onclick="updateAlertDashboard()" style="background: var(--pnl); border: 1px solid var(--brd); color: var(--txt); padding: 5px 10px; border-radius: 4px; font-size: 0.8rem;">🔄 Refresh Alerts</button>
+        </div>
+        <div class="metric">
+          <span>Active Alerts</span>
+          <span id="active-alerts-count">Loading…</span>
+        </div>
+        <div class="metric">
+          <span>Critical Alerts</span>
+          <span id="critical-alerts-count">Loading…</span>
+        </div>
+        <div class="metric">
+          <span>Alert Engine Status</span>
+          <span id="alert-engine-status">Loading…</span>
+        </div>
+        <div style="margin-top: 15px;">
+          <h4 style="color: var(--head1); font-weight: 400; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 8px;">Active Alerts</h4>
+          <div id="active-alerts-list" style="max-height: 200px; overflow-y: auto;">
+            <!-- Active alerts will be populated here -->
+          </div>
+        </div>
+        <div style="margin-top: 15px;">
+          <h4 style="color: var(--head1); font-weight: 400; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 8px;">Recent Alert History</h4>
+          <div id="alert-history-list" style="max-height: 150px; overflow-y: auto;">
+            <!-- Alert history will be populated here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- System Resources -->
+      <div class="card">
+        <h2>SYSTEM RESOURCES [ CPU, MEMORY, DISK, UPTIME ]</h2>
+        <div class="metric">
+          <span>Memory Usage</span>
+          <span id="memory-usage">Loading…</span>
+        </div>
+        <div class="metric">
+          <span>CPU Usage</span>
+          <span id="cpu-usage">Loading…</span>
+        </div>
+        <div class="metric">
+          <span>Disk Usage</span>
+          <span id="disk-usage">Loading…</span>
+        </div>
+        <div class="metric">
+          <span>Uptime</span>
+          <span id="uptime">Loading…</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let data = {};
+    let updateInterval;
+
+    function concatenateFilename(filename, maxLength = 35) {
+      if (!filename || filename.length <= maxLength) {
+        return filename;
+      }
+      
+      // Extract file extension
+      const lastDotIndex = filename.lastIndexOf('.');
+      if (lastDotIndex === -1) {
+        // No extension, just truncate
+        return `${filename.substring(0, maxLength - 3)}...`;
+      }
+      
+      const name = filename.substring(0, lastDotIndex);
+      const extension = filename.substring(lastDotIndex);
+      
+      // If name is already short enough, return as is
+      if (name.length <= maxLength - 3) {
+        return filename;
+      }
+      
+      // Truncate name and add ellipsis
+      const truncatedName = `${name.substring(0, maxLength - 6)}...`;
+      return truncatedName + extension;
+    }
+
+    function formatTimestamp(timestamp) {
+      if (!timestamp) return 'Never';
+      const date = new Date(timestamp);
+      return date.toLocaleString();
+    }
+
+    function formatUptime(seconds) {
+      if (!seconds) return 'Unknown';
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return `${hours}h ${minutes}m`;
+    }
+
+    function updateOverallHealth() {
+      const dot = document.getElementById('overallDot');
+      if (!data.agent_status) return;
+
+      const mainHealthy = data.agent_status.MAIN?.pending === 0;
+      const cyopsHealthy = data.agent_status.CYOPS?.pending === 0;
+      const allHealthy = mainHealthy && cyopsHealthy;
+
+      dot.className = `dot ${allHealthy ? 'ok' : 'warn'}`;
+    }
+
+    function updateAgentGrid(agentName, agentData) {
+      const grid = document.getElementById(agentName.toLowerCase() + 'Grid');
+      if (!grid || !agentData) return;
+
+      const statusClass = agentData.pending > 0 ? 'pending' : 'healthy';
+      const statusText = agentData.pending > 0 ? `${agentData.pending} Pending` : 'Healthy';
+
+      // Get agent-specific data
+      const patches = data.patch_status?.[agentName] || {};
+      const summaries = patches.summary_details || [];
+      const executions = patches.patch_details || [];
+      const logs = data.recent_logs?.log_files || [];
+
+      grid.innerHTML = `
+        <div class="card">
+          <h2>${agentName} Agent</h2>
+          <div class="metric">
+            <span>Status</span>
+            <span class="agent-status ${statusClass}">${statusText}</span>
+          </div>
+          <div class="metric">
+            <span>Pending</span>
+            <span>${agentData.pending}</span>
+          </div>
+          <div class="metric">
+            <span>Completed</span>
+            <span>${agentData.completed}</span>
+          </div>
+          <div class="metric">
+            <span>Summary Monitor</span>
+            <span>${agentData.processes['summary-monitor'] || 'Unknown'}</span>
+          </div>
+          <div class="metric">
+            <span>Patch Executor</span>
+            <span>${agentData.processes['patch-executor'] || 'Unknown'}</span>
+          </div>
+
+          <!-- Patch Delivery Section -->
+          <div class="agent-subsection">
+            <h4>🚚 Patch Delivery</h4>
+            <ul class="generic-list">
+              ${executions.slice(0, 3).map(exec => {
+                const name = exec.name || 'Unknown';
+                const concatenatedName = concatenateFilename(name, 35);
+                return `<li>
+                  <span class="list-id" title="${name}">${concatenatedName}</span>
+                  <span class="list-time">${new Date(exec.timestamp || Date.now()).toLocaleTimeString()}</span>
+                  <span class="dot ${exec.status === 'completed' ? 'ok' : exec.status === 'failed' ? 'err' : 'warn'}"></span>
+                </li>`;
+              }).join('') || '<li>No recent patches</li>'}
+            </ul>
+          </div>
+
+          <!-- Execution History Section -->
+          <div class="agent-subsection">
+            <h4>🏃 Execution History</h4>
+            <ul class="generic-list">
+              ${executions.slice(0, 3).map(exec => {
+                const name = exec.name || 'Unknown';
+                const concatenatedName = concatenateFilename(name, 35);
+                return `<li>
+                  <span class="list-id" title="${name}">${concatenatedName}</span>
+                  <span class="list-time">${new Date(exec.timestamp || Date.now()).toLocaleTimeString()}</span>
+                  <span class="dot ${exec.status === 'completed' ? 'ok' : exec.status === 'failed' ? 'err' : 'warn'}"></span>
+                </li>`;
+              }).join('') || '<li>No execution history</li>'}
+            </ul>
+          </div>
+
+          <!-- Recent Summaries Section -->
+          <div class="agent-subsection">
+            <h4>📰 Recent Summaries</h4>
+            <ul class="generic-list">
+              ${summaries.slice(0, 3).map(summary => {
+                const name = summary.name || 'Unknown';
+                const concatenatedName = concatenateFilename(name, 35);
+                return `<li>
+                  <span class="list-id" title="${name}">${concatenatedName}</span>
+                  <span class="list-time">${new Date(summary.timestamp || Date.now()).toLocaleTimeString()}</span>
+                </li>`;
+              }).join('') || '<li>No recent summaries</li>'}
+            </ul>
+          </div>
+
+          <!-- Recent Logs Section -->
+          <div class="agent-subsection">
+            <h4>📝 Recent Logs</h4>
+            <div style="font-size:.75rem;max-height:100px;overflow-y:auto;">
+              ${logs.slice(0, 3).map(logFile => {
+                if (logFile.lines && logFile.lines.length > 0) {
+                  const lastLine = logFile.lines[logFile.lines.length - 1];
+                  try {
+                    const logData = JSON.parse(lastLine);
+                    return `<div style="margin:2px 0;color:var(--txt);">
+                      <span style="color:var(--sub);">${new Date(logData.timestamp).toLocaleTimeString()}</span>
+                      <span style="color:var(--ok);">${logData.level || 'INFO'}</span>
+                      <span>${(logData.message || 'No message').substring(0, 50)}...</span>
+                    </div>`;
+                  } catch (error) {
+                    return `<div style="margin:2px 0;color:var(--txt);">${lastLine.substring(0, 50)}...</div>`;
+                  }
+                }
+                return '';
+              }).join('') || '<div style="color:var(--sub);">No recent logs</div>'}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateComponentHealth() {
+      const health = data.process_health || {};
+      const daemonStatus = data.daemon_status || {};
+      
+      const components = [
+        ['fly', 'Fly.io', 'fly'],
+        ['tunnel-webhook', 'Webhook Tunnel', 'tunnel-webhook'],
+        ['tunnel-dashboard', 'Dashboard Tunnel', 'tunnel-dashboard'],
+        ['flask', 'Flask App', 'flask'],
+        ['braun', 'BRAUN Daemon', 'braun'],
+        ['ghost', 'Ghost Runner', 'ghost-runner'],
+        ['executor', 'Patch Executor', 'patch-executor'],
+        ['uplink', 'Dashboard Uplink', 'dashboard-uplink'],
+        ['watcher', 'Summary Watcher', 'summary-monitor'],
+        ['comprehensive', 'Comprehensive Dashboard', 'comprehensive-dashboard'],
+        // Ghost 2.0 Advanced Capabilities
+        ['autonomous-decision-daemon', 'Autonomous Decision Engine', 'autonomous-decision-daemon'],
+        ['telemetry-orchestrator-daemon', 'Telemetry Orchestrator', 'telemetry-orchestrator-daemon'],
+        ['metrics-aggregator-daemon', 'Metrics Aggregator', 'metrics-aggregator-daemon'],
+        ['alert-engine-daemon', 'Alert Engine', 'alert-engine-daemon'],
+        ['enhanced-doc-daemon', 'Enhanced Document Daemon', 'enhanced-doc-daemon']
+      ];
+
+      components.forEach(([key, label, processKey]) => {
+        const el = document.getElementById('health-' + key);
+        if (!el) return;
+
+        // Check multiple sources for health status
+        let status = 'unknown';
+        
+        // Check process_health first using the correct keys
+        if (health[processKey]) {
+          status = health[processKey].status || health[processKey];
+        }
+        // Check daemon_status
+        else if (daemonStatus[processKey]) {
+          status = daemonStatus[processKey];
+        }
+        // Check agent_status for specific processes
+        else if (data.agent_status) {
+          if (data.agent_status.CYOPS?.processes?.[processKey]) {
+            status = data.agent_status.CYOPS.processes[processKey];
+          } else if (data.agent_status.MAIN?.processes?.[processKey]) {
+            status = data.agent_status.MAIN.processes[processKey];
+          }
+        }
+
+        // Normalize status to lowercase for comparison
+        status = status.toLowerCase();
+
+        const isHealthy = status === 'healthy' || status === 'running' || status === 'active' || status === 'ok';
+        const isError = status === 'stopped' || status === 'error' || status === 'failed';
+
+        el.className = `status-indicator ${
+          isHealthy ? 'status-ok' : isError ? 'status-error' : 'status-unknown'
+        }`;
+        el.textContent = isHealthy ? '✅' : isError ? '❌' : '⚠️';
+      });
+    }
+
+    function updateTelemetryDashboard() {
+      const telemetryContainer = document.getElementById('telemetry-dashboard');
+      if (!telemetryContainer) {
+        console.error('[telemetry] Container not found');
+        return;
+      }
+      if (!data.telemetry) {
+        console.error('[telemetry] No telemetry data available');
+        telemetryContainer.innerHTML = `
+          <div class="telemetry-card">
+            <h4>📊 Telemetry Status</h4>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Status</span>
+              <span class="telemetry-value">No Data Available</span>
+            </div>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Last Check</span>
+              <span class="telemetry-value">${new Date().toLocaleTimeString()}</span>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const telemetry = data.telemetry;
+      console.log('[telemetry] Data received:', telemetry);
+      
+      // Create telemetry cards
+      let telemetryHTML = '';
+      
+      // System Health Card
+      if (telemetry.systemHealth) {
+        const health = telemetry.systemHealth;
+        telemetryHTML += `
+          <div class="telemetry-card">
+            <h4>🏥 System Health</h4>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Overall Status</span>
+              <span class="telemetry-value">${health.overall || 'unknown'}</span>
+            </div>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Uptime</span>
+              <span class="telemetry-value">${Math.round((health.uptime || 0) / 1000)}s</span>
+            </div>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Health Score</span>
+              <span class="telemetry-value">${health.score || 0}%</span>
+            </div>
+          </div>
+        `;
+      }
+      
+      // Component Metrics Card
+      if (telemetry.metrics) {
+        const metrics = telemetry.metrics;
+        telemetryHTML += `
+          <div class="telemetry-card">
+            <h4>🔧 Component Metrics</h4>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Total Components</span>
+              <span class="telemetry-value">${metrics.totalComponents}</span>
+            </div>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Healthy</span>
+              <span class="telemetry-value" style="color: #14936693;">${metrics.healthyComponents}</span>
+            </div>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Degraded</span>
+              <span class="telemetry-value" style="color: #f8a3249d;">${metrics.degradedComponents}</span>
+            </div>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Unhealthy</span>
+              <span class="telemetry-value" style="color: #df131379;">${metrics.unhealthyComponents + metrics.criticalComponents}</span>
+            </div>
+          </div>
+        `;
+      }
+      
+      // Recent Events Card
+      if (telemetry.recentEvents && telemetry.recentEvents.length > 0) {
+        telemetryHTML += `
+          <div class="telemetry-card">
+            <h4>📋 Recent Events</h4>
+            ${telemetry.recentEvents.slice(0, 5).map(event => `
+              <div class="telemetry-metric">
+                <span class="telemetry-label">${event.componentName || 'System'}</span>
+                <span class="telemetry-value" style="color: ${event.severity === 'error' ? '#df131379' : event.severity === 'warning' ? '#f8a3249d' : '#14936693'};">${event.eventType}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+      
+      // Component Status Card
+      if (telemetry.components && telemetry.components.length > 0) {
+        const healthyComps = telemetry.components.filter(c => c.health === 'healthy').length;
+        const totalComps = telemetry.components.length;
+        
+        telemetryHTML += `
+          <div class="telemetry-card">
+            <h4>📊 Component Status</h4>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Health Ratio</span>
+              <span class="telemetry-value">${healthyComps}/${totalComps}</span>
+            </div>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Last Update</span>
+              <span class="telemetry-value">${new Date().toLocaleTimeString()}</span>
+            </div>
+          </div>
+        `;
+      }
+      
+      // No Data Card
+      if (!telemetryHTML) {
+        telemetryHTML = `
+          <div class="telemetry-card">
+            <h4>📊 Telemetry Status</h4>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Status</span>
+              <span class="telemetry-value">${telemetry.status || 'No Data'}</span>
+            </div>
+            <div class="telemetry-metric">
+              <span class="telemetry-label">Message</span>
+              <span class="telemetry-value">${telemetry.message || 'Telemetry not available'}</span>
+            </div>
+          </div>
+        `;
+      }
+      
+      // Add debug info
+      telemetryHTML += `
+        <div class="telemetry-card">
+          <h4>🔍 Debug Info</h4>
+          <div class="telemetry-metric">
+            <span class="telemetry-label">Data Available</span>
+            <span class="telemetry-value">${telemetry ? 'Yes' : 'No'}</span>
+          </div>
+          <div class="telemetry-metric">
+            <span class="telemetry-label">Last Update</span>
+            <span class="telemetry-value">${new Date().toLocaleTimeString()}</span>
+          </div>
+        </div>
+      `;
+      
+      telemetryContainer.innerHTML = telemetryHTML;
+    }
+
+    function updateAlertDashboard() {
+      const alertEngineStatusEl = document.getElementById('alert-engine-status');
+      const activeAlertsCountEl = document.getElementById('active-alerts-count');
+      const criticalAlertsCountEl = document.getElementById('critical-alerts-count');
+      const activeAlertsListEl = document.getElementById('active-alerts-list');
+      const alertHistoryListEl = document.getElementById('alert-history-list');
+
+      if (!data.alert_engine_status) {
+        alertEngineStatusEl.textContent = 'Loading...';
+        activeAlertsCountEl.textContent = 'Loading...';
+        criticalAlertsCountEl.textContent = 'Loading...';
+        activeAlertsListEl.innerHTML = '<div style="color: var(--sub);">No active alerts</div>';
+        alertHistoryListEl.innerHTML = '<div style="color: var(--sub);">No alert history</div>';
+        return;
+      }
+
+      alertEngineStatusEl.textContent = data.alert_engine_status.status || 'Unknown';
+      activeAlertsCountEl.textContent = data.alert_engine_status.activeAlerts || '0';
+      criticalAlertsCountEl.textContent = data.alert_engine_status.criticalAlerts || '0';
+
+      if (data.alert_engine_status.activeAlerts) {
+        activeAlertsListEl.innerHTML = data.alert_engine_status.activeAlerts.map(alert => {
+          return `
+            <div style="margin: 5px 0; padding: 8px; background: var(--pnl); border: 1px solid var(--brd); border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--txt); font-weight: bold;">${alert.id}</span>
+              <span style="color: var(--sub);">${alert.message}</span>
+              <span style="color: var(--ok);">${alert.severity}</span>
+            </div>
+          `;
+        }).join('');
+      } else {
+        activeAlertsListEl.innerHTML = '<div style="color: var(--sub);">No active alerts</div>';
+      }
+
+      if (data.alert_engine_status.alertHistory) {
+        alertHistoryListEl.innerHTML = data.alert_engine_status.alertHistory.map(alert => {
+          return `
+            <div style="margin: 5px 0; padding: 8px; background: var(--pnl); border: 1px solid var(--brd); border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--txt); font-weight: bold;">${alert.id}</span>
+              <span style="color: var(--sub);">${alert.message}</span>
+              <span style="color: var(--ok);">${alert.severity}</span>
+            </div>
+          `;
+        }).join('');
+      } else {
+        alertHistoryListEl.innerHTML = '<div style="color: var(--sub);">No alert history</div>';
+      }
+    }
+
+    function updateSystemResources() {
+      const monitor = data.unified_monitor;
+      if (!monitor) return;
+
+      document.getElementById('uptime').textContent = formatUptime(monitor.uptime);
+
+      const resources = monitor.systems?.resources;
+      if (resources) {
+        document.getElementById('memory-usage').textContent = `${resources.memory || 0}%`;
+        document.getElementById('cpu-usage').textContent = `${resources.cpu || 0}%`;
+        document.getElementById('disk-usage').textContent = `${resources.disk || 0}%`;
+      }
+    }
+
+    function updateDashboard() {
+      updateOverallHealth();
+      updateAgentGrid('CYOPS', data.agent_status?.CYOPS);
+      updateAgentGrid('MAIN', data.agent_status?.MAIN);
+      updateComponentHealth();
+      updateTelemetryDashboard();
+      updateAlertDashboard(); // Added this line
+      updateSystemResources();
+    }
+
+    async function fetchData() {
+      try {
+        console.log('[dashboard] Fetching data...');
+        
+        const response = await fetch('/api/status');
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        data = await response.json();
+        
+        // Fetch alert data separately
+        try {
+          const alertResponse = await fetch('/api/telemetry/alerts');
+          if (alertResponse.ok) {
+            const alertData = await alertResponse.json();
+            data.alert_engine_status = alertData.telemetryAlerts;
+          }
+        } catch (alertError) {
+          console.warn('[dashboard] Failed to fetch alert data:', alertError);
+          data.alert_engine_status = null;
+        }
+        
+        updateDashboard();
+        
+      } catch (error) {
+        console.error('[dashboard] Failed to fetch data:', error);
+        document.getElementById('overallDot').className = 'dot err';
+      }
+    }
+
+    // Initial load
+    fetchData();
+
+    // Poll every 30 seconds
+    updateInterval = setInterval(fetchData, 30000);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (updateInterval) {
+        clearInterval(updateInterval);
+      }
+    });
+  </script>
+</body>
+</html>

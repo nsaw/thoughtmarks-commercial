@@ -1,0 +1,89 @@
+{
+    "showInUI": true,
+    "blockId": "patch-v3.4.2(P4.03.00)_ghost-runtime-diff-monitor",
+    "version": "patch-v3.4.2(P4.03.00)_ghost-runtime-diff-monitor",
+    "description": "Live diff monitor to compare summary files, patch JSON, and validator logs at runtime",
+    "target": "DEV",
+    "notes": [
+      "GOAL: Add a periodic diff-check that compares the patch block, summary file, and validator log for mismatch",
+      "MISSION: Report misalignment in content, tags, mutation counts, status → emit relay alerts if detected",
+      "CONTEXT: Reinforces role trust, ghost health, and summary truthfulness"
+    ],
+    "to-do": [
+      "Add `diffMonitor.ts` to ghost shell",
+      "Scan `.summary.md` vs patch `.json` vs validator log trace",
+      "Emit warning if mismatch in PATCH ID, status, or mutation count",
+      "Add hash check on summary payload"
+    ],
+    "tasks": {
+      "setup": [
+        "Collect recent summary file and patch",
+        "Hash contents and store for comparison"
+      ],
+      "mutate": [
+        "Inject `diffMonitor.ts`",
+        "Mount into ghost-shell heartbeat loop",
+        "Emit warnings and send `relayCore` messages"
+      ],
+      "verify": [
+        "Force mismatch in tag → expect detection",
+        "Flip summary status manually → expect alert"
+      ],
+      "commit": [
+        "Only passes if validator emits 3 clean PASS diffs",
+        "Relay must fire only on failure"
+      ]
+    },
+    "mutations": [
+      {
+        "path": "/Users/sawyer/gitSync/gpt-cursor-runner/src-nextgen/ghost/shell/diffMonitor.ts",
+        "contents": "// Diff Monitor for summary-patch-validator alignment\nimport fs from 'fs';\nimport crypto from 'crypto';\nimport path from 'path';\nimport { emitPatchComplete } from './relayCore';\n\nexport function startDiffMonitor() {\n  const patchDir = '/Users/sawyer/gitSync/.cursor-cache/CYOPS/patches/.completed';\n  const summaryDir = '/Users/sawyer/gitSync/.cursor-cache/CYOPS/summaries';\n\n  function hashFile(file: string) {\n    const content = fs.readFileSync(file, 'utf8');\n    return crypto.createHash('sha256').update(content).digest('hex');\n  }\n\n  function check() {\n    try {\n      const files = fs.readdirSync(summaryDir).filter(f => f.endsWith('.summary.md'));\n      const latestSummary = files.sort((a, b) => fs.statSync(path.join(summaryDir, b)).mtimeMs - fs.statSync(path.join(summaryDir, a)).mtimeMs)[0];\n      const patchId = latestSummary.replace('.summary.md', '')\n      const patchPath = path.join(patchDir, patchId + '.json');\n      const summaryPath = path.join(summaryDir, latestSummary);\n\n      if (!fs.existsSync(patchPath)) return;\n\n      const hash1 = hashFile(patchPath);\n      const hash2 = hashFile(summaryPath);\n\n      if (hash1 !== hash2) {\n        console.warn(`[DiffMonitor] ⚠️ Summary mismatch: ${patchId}`);\n        emitPatchComplete('DIFF_MISMATCH_' + patchId);\n      } else {\n        console.log(`[DiffMonitor] ✅ Summary/patch match: ${patchId}`);\n      }\n    } catch (e) {\n      console.warn('[DiffMonitor] error:', e);\n    }\n  }\n\n  setInterval(check, 90000); // every 90s\n}"
+      },
+      {
+        "path": "/Users/sawyer/gitSync/gpt-cursor-runner/src-nextgen/ghost/shell/index.ts",
+        "contents": "// Add diff monitor to ghost-shell\nimport { startDiffMonitor } from './diffMonitor';\n\nexport async function startGhostShell() {\n  ...\n  startDiffMonitor();\n}"
+      }
+    ],
+    "preCommit": {
+      "backup": {
+        "path": "/Users/sawyer/gitSync/_backups/gpt-cursor-runner/",
+        "file": "20250727_patch-v3.4.2(P4.03.00)_ghost-runtime-diff-monitor_backup_gpt-cursor-runner.tar.gz"
+      },
+      "shell": [
+        "echo 'Injecting live summary-patch diff monitor...'"
+      ]
+    },
+    "postMutationBuild": {
+      "shell": [
+        "timeout 60s tsc --noEmit || exit 421",
+        "timeout 60s eslint . --ext .ts,.tsx --max-warnings=0 || exit 422",
+        "timeout 180s yarn test:unit --watchAll=false || exit 423"
+      ]
+    },
+    "validate": {
+      "shell": [
+        "test -f /Users/sawyer/gitSync/.cursor-cache/CYOPS/patches/.completed/patch-v3.4.1(P4.02.00)_ghost-role-verifier.json || exit 424"
+      ]
+    },
+    "final": {
+      "git": {
+        "commit": "[PATCH P4.03.00] ghost-runtime-diff-monitor — adds live validator/summary/patch drift detection",
+        "tag": "patch-v3.4.2(P4.03.00)_ghost-runtime-diff-monitor"
+      },
+      "summary": "✅ patch-v3.4.2(P4.03.00)_ghost-runtime-diff-monitor: Ghost now detects and logs live patch/summary validator mismatches.",
+      "summaryFile": "/Users/sawyer/gitSync/.cursor-cache/CYOPS/summaries/patch-v3.4.2(P4.03.00)_ghost-runtime-diff-monitor.summary.md"
+    },
+    "blockCommitOnError": true,
+    "watchConsole": true,
+    "execution": {
+      "autoReleaseTimeoutMs": 30000,
+      "onReloadHang": "Move to background and resume automatically"
+    },
+    "enforceValidationGate": true,
+    "strictRuntimeAudit": true,
+    "runDryCheck": true,
+    "forceRuntimeTrace": true,
+    "requireMutationProof": true,
+    "requireServiceUptime": true
+  }
+  

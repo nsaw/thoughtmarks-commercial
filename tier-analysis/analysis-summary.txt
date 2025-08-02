@@ -1,0 +1,5 @@
+Tier Analysis Summary - Fri Aug  1 11:59:54 PDT 2025
+free components:      343
+pro components:      292
+team components:      249
+enterprise components:       10

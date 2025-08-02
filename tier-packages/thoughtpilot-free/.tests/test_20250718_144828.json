@@ -1,0 +1,9 @@
+{
+  "id": "test",
+  "patch": {
+    "pattern": "test",
+    "replacement": "replaced"
+  },
+  "role": "ui_patch",
+  "target_file": "test.tsx"
+}

@@ -1,0 +1,5 @@
+Free tier bundle creation completed: Fri Aug  1 13:06:49 PDT 2025
+Bundle location: tier-packages/thoughtpilot-free/
+Components included: gpt_cursor_runner, core, utils, bin, feature-flag-system, doctor-scripts, installation-scripts
+Demo files: free-demo.sh, free-demo-patch.json
+Bundle validation: PASS

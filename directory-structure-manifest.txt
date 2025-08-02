@@ -1,0 +1,9 @@
+/Users/sawyer/gitSync/thoughtpilot-commercial
+├── directory-structure-manifest.txt
+├── original-clone
+├── thoughtpilot-enterprise
+├── thoughtpilot-free
+├── thoughtpilot-pro
+└── thoughtpilot-team
+
+6 directories, 1 file

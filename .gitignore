@@ -1,0 +1,40 @@
+# OS/Editor/System
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+*.log
+logs/
+
+# Builds & Installers
+distributions/
+_backups/
+*.tar.gz
+*.pkg
+*.dmg
+*.exe
+*.deb
+*.rpm
+npm-packages/
+docker-images/
+
+# Node
+node_modules/
+.env
+.env.*
+*.env
+
+# Test Output
+coverage/
+testing/results/
+testing/logs/
+*.test.js
+
+# Python
+*.pyc
+__pycache__/
+
+# Misc
+*.bak
+*.tmp 

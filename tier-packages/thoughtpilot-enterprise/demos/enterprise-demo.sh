@@ -1,0 +1,17 @@
+#!/bin/bash
+echo "🔬 ThoughtPilot Enterprise Tier Demo"
+echo "Running Enterprise tier diagnostics..."
+bash doctor-scripts/doctor-enterprise.sh
+echo "Checking Enterprise SSO..."
+test -d enterprise-sso && echo "✅ Enterprise SSO found" || echo "❌ Enterprise SSO missing"
+echo "Checking Security features..."
+test -d security && echo "✅ Security features found" || echo "❌ Security features missing"
+echo "Checking Helm charts..."
+test -d helm && echo "✅ Helm charts found" || echo "❌ Helm charts missing"
+echo "Checking Compliance features..."
+test -d compliance && echo "✅ Compliance features found" || echo "❌ Compliance features missing"
+echo "Checking Airgapped deployment..."
+test -d airgapped && echo "✅ Airgapped deployment found" || echo "❌ Airgapped deployment missing"
+echo "Checking Custom GPT endpoints..."
+test -d custom-gpt && echo "✅ Custom GPT endpoints found" || echo "❌ Custom GPT endpoints missing"
+echo "✅ Enterprise tier demo completed!"

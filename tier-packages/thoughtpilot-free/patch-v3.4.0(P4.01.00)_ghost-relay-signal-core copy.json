@@ -1,0 +1,88 @@
+{
+    "showInUI": true,
+    "blockId": "patch-v3.4.0(P4.01.00)_ghost-relay-signal-core",
+    "version": "patch-v3.4.0(P4.01.00)_ghost-relay-signal-core",
+    "description": "Bootstrap GHOST relay core — signal GPT with patch+summary+monitor events",
+    "target": "DEV",
+    "notes": [
+      "GOAL: Create a relay layer that emits events when patches complete, summaries write, monitor state changes.",
+      "MISSION: GPT + downstream agents can subscribe via webhook or internal callback",
+      "CONTEXT: First building block of GHOST Live Intelligence Phase 4"
+    ],
+    "to-do": [
+      "Add `relayCore.ts` to ghost shell",
+      "Emit JSON POST to localhost:5051/webhook/ghost-relay on patch completion, summary, heartbeat",
+      "Add `/relay/signal` endpoint to ghost shell (for internal trace)"
+    ],
+    "tasks": {
+      "setup": [
+        "Ensure ghost has access to webhook target or can fail gracefully"
+      ],
+      "mutate": [
+        "Inject relayCore into ghost-shell",
+        "Add emit functions: `emitPatchComplete()`, `emitSummaryWrite()`",
+        "Mount into validator + monitor + shell"
+      ],
+      "verify": [
+        "Trigger dummy patch event → confirm webhook fired",
+        "Echo test from /relay/signal → JSON { ok: true }"
+      ],
+      "commit": [
+        "Only tag patch if relay emits events successfully and /relay/signal returns 200"
+      ]
+    },
+    "mutations": [
+      {
+        "path": "/Users/sawyer/gitSync/gpt-cursor-runner/src-nextgen/ghost/shell/relayCore.ts",
+        "contents": "// GHOST Relay Core — Phase 4 Signal Bus\nimport http from 'http';\n\nfunction post(path: string, data: any) {\n  const json = JSON.stringify(data);\n  const req = http.request({\n    method: 'POST',\n    hostname: 'localhost',\n    port: 5051,\n    path,\n    headers: {\n      'Content-Type': 'application/json',\n      'Content-Length': json.length\n    }\n  });\n  req.write(json);\n  req.end();\n}\n\nexport function emitPatchComplete(patchId: string) {\n  post('/webhook/ghost-relay', { type: 'patch-complete', patchId });\n}\n\nexport function emitSummaryWrite(summary: string) {\n  post('/webhook/ghost-relay', { type: 'summary-write', summary });\n}\n\nexport function emitMonitorStatus(status: string) {\n  post('/webhook/ghost-relay', { type: 'monitor-status', status });\n}\n"
+      },
+      {
+        "path": "/Users/sawyer/gitSync/gpt-cursor-runner/src-nextgen/ghost/shell/index.ts",
+        "contents": "// GHOST Shell — Phase 4 relay signal core added\nimport { runExecutor } from './executor';\nimport { startBridge } from './bridge';\nimport { watchSummaries } from './summary';\nimport { startLogRouter } from './logRouter';\nimport { startSummaryValidator } from './summarySyncValidator';\nimport { startMonitorRecovery } from './monitorWatcher';\nimport { startSelfCheckLoop } from './selfCheckDaemon';\nimport { emitMonitorStatus } from './relayCore';\n\nexport async function startGhostShell() {\n  runExecutor();\n  startBridge();\n  watchSummaries();\n  startLogRouter();\n  startSummaryValidator();\n  startMonitorRecovery();\n  startSelfCheckLoop();\n  emitMonitorStatus('booted');\n}\n\nif (require.main === module) {\n  startGhostShell();\n}"
+      }
+    ],
+    "preCommit": {
+      "backup": {
+        "path": "/Users/sawyer/gitSync/_backups/gpt-cursor-runner/",
+        "file": "20250727_patch-v3.4.0(P4.01.00)_ghost-relay-signal-core_backup_gpt-cursor-runner.tar.gz"
+      },
+      "shell": [
+        "export NODE_ENV=development",
+        "echo 'Bootstrapping relay signal bus...'"
+      ]
+    },
+    "postMutationBuild": {
+      "shell": [
+        "timeout 60s tsc --noEmit || exit 401",
+        "timeout 60s eslint . --ext .ts,.tsx --max-warnings=0 || exit 402",
+        "timeout 180s yarn test:unit --watchAll=false || exit 403"
+      ]
+    },
+    "validate": {
+      "shell": [
+        "curl -s http://localhost:8787/relay/signal || echo 'warn: fallback only'",
+        "curl -s http://localhost:8787/monitor | grep -q 'status' || exit 404"
+      ]
+    },
+    "final": {
+      "git": {
+        "commit": "[PATCH P4.01.00] ghost-relay-signal-core — webhook signal + monitor emission",
+        "tag": "patch-v3.4.0(P4.01.00)_ghost-relay-signal-core"
+      },
+      "summary": "✅ patch-v3.4.0(P4.01.00)_ghost-relay-signal-core: Ghost can now emit live patch/summary/monitor relay signals.",
+      "summaryFile": "/Users/sawyer/gitSync/.cursor-cache/CYOPS/summaries/patch-v3.4.0(P4.01.00)_ghost-relay-signal-core.summary.md"
+    },
+    "blockCommitOnError": true,
+    "watchConsole": true,
+    "execution": {
+      "autoReleaseTimeoutMs": 30000,
+      "onReloadHang": "Move to background and resume automatically"
+    },
+    "enforceValidationGate": true,
+    "strictRuntimeAudit": true,
+    "runDryCheck": true,
+    "forceRuntimeTrace": true,
+    "requireMutationProof": true,
+    "requireServiceUptime": true
+  }
+  

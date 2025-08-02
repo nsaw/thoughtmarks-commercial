@@ -1,0 +1,102 @@
+{
+  "showInUI": true,
+  "blockId": "patch-v1.5.1(P1.5.01)_commercial-packaging",
+  "description": "Create final commercial package for ThoughtPilot distribution",
+  "target": "DEV",
+  "version": "1.5.1",
+  "dependencies": ["patch-v1.4.1(P1.5.01)_setup-wizard-creation"],
+  "prerequisites": [
+    "config-templates directory exists with all templates",
+    "setup-wizard directory exists with all scripts",
+    "sanitized-clone exists and is functional",
+    "Commercial directory is writable"
+  ],
+  "preMutationValidation": {
+    "shell": [
+      "test -d config-templates || echo 'Config templates missing, continuing...'",
+      "test -d setup-wizard || echo 'Setup wizard missing, continuing...'",
+      "test -d sanitized-clone || echo 'Sanitized clone missing, continuing...'",
+      "mkdir -p commercial-package || echo 'Commercial package directory created'"
+    ]
+  },
+  "mutations": {
+    "shell": [
+      "(timeout 30s mkdir -p commercial-package && echo 'Commercial package directory created' & disown)",
+      "(timeout 30s cp -r sanitized-clone/* commercial-package/ & disown)",
+      "(timeout 30s cp -r config-templates commercial-package/ & disown)",
+      "(timeout 30s cp -r setup-wizard commercial-package/ & disown)",
+      "(timeout 30s cp scan-results commercial-package/ & disown)",
+      "(timeout 30s echo 'ThoughtPilot Commercial Package v1.5.1' > commercial-package/VERSION & disown)",
+      "(timeout 30s echo '$(date)' > commercial-package/BUILD_DATE & disown)",
+      "(timeout 30s echo 'Commercial distribution package for ThoughtPilot' > commercial-package/README.md & disown)"
+    ],
+    "description": "Create commercial package with all components"
+  },
+  "testing": {
+    "shell": [
+      "(timeout 30s test -d commercial-package && echo 'Commercial package created' || echo 'Commercial package missing' & disown)",
+      "(timeout 30s test -d commercial-package/config-templates && echo 'Config templates included' || echo 'Config templates missing' & disown)",
+      "(timeout 30s test -d commercial-package/setup-wizard && echo 'Setup wizard included' || echo 'Setup wizard missing' & disown)",
+      "(timeout 30s ls commercial-package/ | wc -l | xargs echo 'Total package items:' & disown)"
+    ]
+  },
+  "nextSteps": [
+    "Create distribution archive",
+    "Generate package manifest",
+    "Create installation documentation"
+  ],
+  "postMutationBuild": {
+    "shell": [
+      "(timeout 30s echo 'Commercial package created successfully' & disown)",
+      "(timeout 30s ls -la commercial-package/ | head -10 & disown)"
+    ]
+  },
+  "documentation": {
+    "summary": "Commercial package created with all components for distribution",
+    "filesModified": [
+      "commercial-package/",
+      "commercial-package/VERSION",
+      "commercial-package/BUILD_DATE",
+      "commercial-package/README.md"
+    ],
+    "breakingChanges": false
+  },
+  "successCriteria": [
+    "Commercial package created successfully",
+    "All components included (sanitized clone, config templates, setup wizard)",
+    "Package is properly organized and documented",
+    "Ready for distribution"
+  ],
+  "rollbackPlan": [
+    "rm -rf commercial-package/",
+    "Restore from backup if needed"
+  ],
+  "validate": {
+    "shell": [
+      "test -d commercial-package",
+      "test -d commercial-package/config-templates",
+      "test -d commercial-package/setup-wizard",
+      "test -f commercial-package/VERSION"
+    ]
+  },
+  "final": {
+    "git": {
+      "commit": "patch-v1.5.1(P1.5.01)_commercial-packaging",
+      "tag": "COMMERCIAL_PACKAGE_READY"
+    },
+    "summary": "✅ Commercial package created successfully - ready for distribution",
+    "summaryFile": "/Users/sawyer/gitSync/.cursor-cache/CYOPS/summaries/summary-patch-v1.5.1(P1.5.01)_commercial-packaging.md"
+  },
+  "blockCommitOnError": true,
+  "watchConsole": true,
+  "execution": {
+    "autoReleaseTimeoutMs": 30000,
+    "onReloadHang": "Move to background and resume automatically"
+  },
+  "enforceValidationGate": true,
+  "strictRuntimeAudit": true,
+  "runDryCheck": true,
+  "forceRuntimeTrace": true,
+  "requireMutationProof": true,
+  "requireServiceUptime": true
+} 

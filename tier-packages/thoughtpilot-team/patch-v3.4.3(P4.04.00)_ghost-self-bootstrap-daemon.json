@@ -1,0 +1,89 @@
+{
+    "showInUI": true,
+    "blockId": "patch-v3.4.3(P4.04.00)_ghost-self-bootstrap-daemon",
+    "version": "patch-v3.4.3(P4.04.00)_ghost-self-bootstrap-daemon",
+    "description": "Install self-bootstrap daemon to auto-restart ghost subsystems and flag orphaned/missing daemons",
+    "target": "DEV",
+    "notes": [
+      "GOAL: GHOST can restart its own shell + validator + relay if they fail or drift",
+      "MISSION: Create persistent bootstrap script that checks each known subsystem every 60s",
+      "CONTEXT: Final Phase 4 patch; prepares the orchestrator, launch script, and monitor UI for Phase 5 integration"
+    ],
+    "to-do": [
+      "Add `bootstrapDaemon.ts` to ghost shell",
+      "Check for: validator, summary watcher, relayCore, diffMonitor, roleVerifier",
+      "Restart ghost shell or kill/restart child if any daemon dies",
+      "Emit heartbeat to relay log",
+      "Declare system READY only if all agents are healthy"
+    ],
+    "tasks": {
+      "setup": [
+        "Confirm PID map and child process health from ghost",
+        "List known daemons by source"
+      ],
+      "mutate": [
+        "Inject `bootstrapDaemon.ts`",
+        "Add to `ghost-shell/index.ts` boot chain",
+        "Print restart logs to `ghost-bootstrap.log`"
+      ],
+      "verify": [
+        "Kill one daemon → expect recovery",
+        "Force shell crash → expect restart"
+      ],
+      "commit": [
+        "Patch only succeeds if all agents pass readiness loop and ghost emits 'READY'"
+      ]
+    },
+    "mutations": [
+      {
+        "path": "/Users/sawyer/gitSync/gpt-cursor-runner/src-nextgen/ghost/shell/bootstrapDaemon.ts",
+        "contents": "// GHOST Self-Bootstrap Daemon — Phase 4 Final\nimport { exec } from 'child_process';\nimport { emitMonitorStatus } from './relayCore';\nimport ps from 'ps-node';\n\nconst processes = ['summarySyncValidator', 'logRouter', 'diffMonitor', 'relayCore', 'roleVerifier'];\n\nfunction isAlive(name: string, cb: (alive: boolean) => void) {\n  ps.lookup({ command: 'node', arguments: name }, (err, resultList) => {\n    if (err) return cb(false);\n    cb(resultList.length > 0);\n  });\n}\n\nexport function startBootstrapDaemon() {\n  console.log('[Bootstrap] Starting ghost bootstrap watchdog...');\n  setInterval(() => {\n    let healthy = true;\n    processes.forEach(proc => {\n      isAlive(proc, alive => {\n        if (!alive) {\n          console.warn(`[Bootstrap] ⚠️ ${proc} missing — restarting ghost shell`);\n          healthy = false;\n          exec('node scripts/restart-ghost-shell.js');\n        }\n      });\n    });\n    if (healthy) emitMonitorStatus('READY');\n  }, 60000);\n}"
+      },
+      {
+        "path": "/Users/sawyer/gitSync/gpt-cursor-runner/src-nextgen/ghost/shell/index.ts",
+        "contents": "// Inject final daemon\nimport { startBootstrapDaemon } from './bootstrapDaemon';\n\nexport async function startGhostShell() {\n  ...\n  startBootstrapDaemon();\n}"
+      }
+    ],
+    "preCommit": {
+      "backup": {
+        "path": "/Users/sawyer/gitSync/_backups/gpt-cursor-runner/",
+        "file": "20250727_patch-v3.4.3(P4.04.00)_ghost-self-bootstrap-daemon_backup_gpt-cursor-runner.tar.gz"
+      },
+      "shell": [
+        "echo 'Injecting final Phase 4 bootstrap daemon...'"
+      ]
+    },
+    "postMutationBuild": {
+      "shell": [
+        "timeout 60s tsc --noEmit || exit 431",
+        "timeout 60s eslint . --ext .ts,.tsx --max-warnings=0 || exit 432",
+        "timeout 180s yarn test:unit --watchAll=false || exit 433"
+      ]
+    },
+    "validate": {
+      "shell": [
+        "grep -q 'READY' /Users/sawyer/gitSync/.cursor-cache/CYOPS/logs/ghost-bootstrap.log || exit 434"
+      ]
+    },
+    "final": {
+      "git": {
+        "commit": "[PATCH P4.04.00] ghost-self-bootstrap-daemon — restart watchdog and full shell recovery",
+        "tag": "patch-v3.4.3(P4.04.00)_ghost-self-bootstrap-daemon"
+      },
+      "summary": "✅ patch-v3.4.3(P4.04.00)_ghost-self-bootstrap-daemon: Ghost now self-heals and restarts all agents if failure detected.",
+      "summaryFile": "/Users/sawyer/gitSync/.cursor-cache/CYOPS/summaries/patch-v3.4.3(P4.04.00)_ghost-self-bootstrap-daemon.summary.md"
+    },
+    "blockCommitOnError": true,
+    "watchConsole": true,
+    "execution": {
+      "autoReleaseTimeoutMs": 30000,
+      "onReloadHang": "Move to background and resume automatically"
+    },
+    "enforceValidationGate": true,
+    "strictRuntimeAudit": true,
+    "runDryCheck": true,
+    "forceRuntimeTrace": true,
+    "requireMutationProof": true,
+    "requireServiceUptime": true
+  }
+  

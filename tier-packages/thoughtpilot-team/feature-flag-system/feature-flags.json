@@ -1,0 +1,54 @@
+{
+  "featureFlags": {
+    "slack": {
+      "enabled": true,
+      "tier": "pro"
+    },
+    "dashboard": {
+      "enabled": true,
+      "tier": "pro"
+    },
+    "teamFeatures": {
+      "enabled": true,
+      "tier": "team"
+    },
+    "cicd": {
+      "enabled": true,
+      "tier": "team"
+    },
+    "enterpriseFeatures": {
+      "enabled": true,
+      "tier": "enterprise"
+    },
+    "airgapped": {
+      "enabled": true,
+      "tier": "enterprise"
+    },
+    "customEndpoints": {
+      "enabled": true,
+      "tier": "enterprise"
+    },
+    "hardened": {
+      "enabled": true,
+      "tier": "all"
+    },
+    "ci_safe": {
+      "enabled": true,
+      "tier": "all"
+    }
+  },
+  "tiers": {
+    "free": {
+      "features": ["hardened", "ci_safe"]
+    },
+    "pro": {
+      "features": ["slack", "dashboard", "hardened", "ci_safe"]
+    },
+    "team": {
+      "features": ["slack", "dashboard", "teamFeatures", "cicd", "hardened", "ci_safe"]
+    },
+    "enterprise": {
+      "features": ["slack", "dashboard", "teamFeatures", "cicd", "enterpriseFeatures", "airgapped", "customEndpoints", "hardened", "ci_safe"]
+    }
+  }
+}

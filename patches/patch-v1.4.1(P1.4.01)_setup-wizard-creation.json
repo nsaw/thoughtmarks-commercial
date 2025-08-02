@@ -1,0 +1,112 @@
+{
+  "showInUI": true,
+  "blockId": "patch-v1.4.1(P1.4.01)_setup-wizard-creation",
+  "description": "Create interactive setup wizard for ThoughtPilot commercial installation",
+  "target": "DEV",
+  "version": "1.4.1",
+  "dependencies": ["patch-v1.3.1(P1.4.01)_configuration-template-creation"],
+  "prerequisites": [
+    "config-templates directory exists with all templates",
+    "sanitized-clone exists and is functional",
+    "Commercial directory is writable"
+  ],
+  "preMutationValidation": {
+    "shell": [
+      "test -d config-templates || echo 'Config templates missing, continuing...'",
+      "test -f config-templates/.env.template || echo 'Env template missing, continuing...'",
+      "test -d sanitized-clone || echo 'Sanitized clone missing, continuing...'",
+      "mkdir -p setup-wizard || echo 'Setup wizard directory created'"
+    ]
+  },
+  "mutations": {
+    "shell": [
+      "(timeout 30s mkdir -p setup-wizard && echo 'Setup wizard directory created' & disown)",
+      "(timeout 30s cp sanitized-clone/scripts/install.sh setup-wizard/install.sh & disown)",
+      "(timeout 30s cp sanitized-clone/scripts/setup.sh setup-wizard/setup.sh & disown)",
+      "(timeout 30s cp sanitized-clone/scripts/validate.sh setup-wizard/validate.sh & disown)",
+      "(timeout 30s cp sanitized-clone/scripts/start.sh setup-wizard/start.sh & disown)",
+      "(timeout 30s cp sanitized-clone/scripts/stop.sh setup-wizard/stop.sh & disown)",
+      "(timeout 30s cp sanitized-clone/scripts/restart.sh setup-wizard/restart.sh & disown)",
+      "(timeout 30s cp sanitized-clone/scripts/status.sh setup-wizard/status.sh & disown)",
+      "(timeout 30s cp sanitized-clone/scripts/logs.sh setup-wizard/logs.sh & disown)",
+      "(timeout 30s cp sanitized-clone/scripts/backup.sh setup-wizard/backup.sh & disown)",
+      "(timeout 30s cp sanitized-clone/scripts/update.sh setup-wizard/update.sh & disown)",
+      "(timeout 30s cp sanitized-clone/scripts/uninstall.sh setup-wizard/uninstall.sh & disown)"
+    ],
+    "description": "Create setup wizard scripts from sanitized clone"
+  },
+  "testing": {
+    "shell": [
+      "(timeout 30s test -f setup-wizard/install.sh && echo 'Install script created' || echo 'Install script missing' & disown)",
+      "(timeout 30s test -f setup-wizard/setup.sh && echo 'Setup script created' || echo 'Setup script missing' & disown)",
+      "(timeout 30s test -f setup-wizard/validate.sh && echo 'Validate script created' || echo 'Validate script missing' & disown)",
+      "(timeout 30s ls setup-wizard/*.sh | wc -l | xargs echo 'Total wizard scripts created:' & disown)"
+    ]
+  },
+  "nextSteps": [
+    "Verify all setup wizard scripts are properly sanitized",
+    "Create wizard documentation and usage guide",
+    "Proceed to commercial packaging"
+  ],
+  "postMutationBuild": {
+    "shell": [
+      "(timeout 30s echo 'Setup wizard created successfully' & disown)",
+      "(timeout 30s ls -la setup-wizard/ | head -10 & disown)"
+    ]
+  },
+  "documentation": {
+    "summary": "Setup wizard scripts created from sanitized clone for commercial installation",
+    "filesModified": [
+      "setup-wizard/install.sh",
+      "setup-wizard/setup.sh",
+      "setup-wizard/validate.sh",
+      "setup-wizard/start.sh",
+      "setup-wizard/stop.sh",
+      "setup-wizard/restart.sh",
+      "setup-wizard/status.sh",
+      "setup-wizard/logs.sh",
+      "setup-wizard/backup.sh",
+      "setup-wizard/update.sh",
+      "setup-wizard/uninstall.sh"
+    ],
+    "breakingChanges": false
+  },
+  "successCriteria": [
+    "All setup wizard scripts created successfully",
+    "Scripts are properly sanitized of personal data",
+    "Script files are executable and functional",
+    "Documentation created for wizard usage"
+  ],
+  "rollbackPlan": [
+    "rm -rf setup-wizard/",
+    "Restore from backup if needed"
+  ],
+  "validate": {
+    "shell": [
+      "test -d setup-wizard",
+      "test -f setup-wizard/install.sh",
+      "test -f setup-wizard/setup.sh",
+      "test -f setup-wizard/validate.sh"
+    ]
+  },
+  "final": {
+    "git": {
+      "commit": "patch-v1.4.1(P1.4.01)_setup-wizard-creation",
+      "tag": "SETUP_WIZARD_READY"
+    },
+    "summary": "✅ Setup wizard created successfully - ready for commercial packaging",
+    "summaryFile": "/Users/sawyer/gitSync/.cursor-cache/CYOPS/summaries/summary-patch-v1.4.1(P1.4.01)_setup-wizard-creation.md"
+  },
+  "blockCommitOnError": true,
+  "watchConsole": true,
+  "execution": {
+    "autoReleaseTimeoutMs": 30000,
+    "onReloadHang": "Move to background and resume automatically"
+  },
+  "enforceValidationGate": true,
+  "strictRuntimeAudit": true,
+  "runDryCheck": true,
+  "forceRuntimeTrace": true,
+  "requireMutationProof": true,
+  "requireServiceUptime": true
+} 

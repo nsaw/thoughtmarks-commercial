@@ -1,0 +1,8 @@
+original-clone/.env
+original-clone/.env.bak_1753346860
+original-clone/.env.development
+original-clone/config/config.json
+original-clone/dist/ThoughtPilot-Enterprise/.env.example
+original-clone/dist/ThoughtPilot-Free/.env.example
+original-clone/dist/ThoughtPilot-Pro/.env.example
+original-clone/dist/ThoughtPilot-Team/.env.example

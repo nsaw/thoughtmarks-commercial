@@ -1,0 +1,5 @@
+Enterprise Tier Bundle Creation Complete
+Created: tier-packages/thoughtpilot-enterprise/
+Components: SSO, Security, Helm, Compliance, Airgapped, Custom GPT
+Demo: enterprise-demo.sh and enterprise-demo-patch.json
+Status: ✅ COMPLETE

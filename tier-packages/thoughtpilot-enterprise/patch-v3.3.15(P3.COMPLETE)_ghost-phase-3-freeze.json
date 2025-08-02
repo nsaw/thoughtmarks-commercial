@@ -1,0 +1,80 @@
+{
+    "showInUI": true,
+    "blockId": "patch-v3.3.15(P3.COMPLETE)_ghost-phase-3-freeze",
+    "version": "patch-v3.3.15(P3.COMPLETE)_ghost-phase-3-freeze",
+    "description": "Tag and freeze GHOST Phase 3 — start new Phase 4 branch",
+    "target": "DEV",
+    "notes": [
+      "GOAL: Finalize Phase 3 patches and mark them immutable",
+      "MISSION: Commit validated checkpoint and prepare Phase 4 safely",
+      "CONTEXT: All summary checks, tunnel rebind, validator and daemon watchdogs now pass",
+      "SAFETY ENFORCEMENT: No Phase 4 commits allowed until this tag lands clean"
+    ],
+    "to-do": [
+      "Confirm monitor returns 200",
+      "Confirm patch-v3.3.14(P3.2.0) and summary are PASS",
+      "Apply final freeze commit and branch cut"
+    ],
+    "tasks": {
+      "setup": [
+        "Check patch executor is idle",
+        "Verify no pending patches in CYOPS queue"
+      ],
+      "mutate": [
+        "Apply tag: patch-v3.3.15(P3.COMPLETE)_ghost-phase-3-freeze",
+        "Create git branch: GHOST2.0_PHASE_4"
+      ],
+      "verify": [
+        "Confirm HEAD is clean",
+        "Check that patch-v3.3.14 exists in .completed",
+        "Ensure branch shows all prior patch tags"
+      ],
+      "commit": [
+        "Write .summary.md to /CYOPS/summaries with PASS",
+        "Git commit + push tag and branch locally only (no remote sync yet)"
+      ]
+    },
+    "preCommit": {
+      "backup": {
+        "path": "/Users/sawyer/gitSync/_backups/gpt-cursor-runner/",
+        "file": "20250727_patch-v3.3.15(P3.COMPLETE)_ghost-phase-3-freeze_backup_gpt-cursor-runner.tar.gz"
+      },
+      "shell": [
+        "echo 'Freezing Phase 3 and locking GHOST state...'",
+        "export NODE_ENV=production"
+      ]
+    },
+    "postMutationBuild": {
+      "shell": [
+        "timeout 30s curl -s https://gpt-cursor-runner.thoughtmarks.app/monitor | grep -q 'live' || exit 341"
+      ]
+    },
+    "validate": {
+      "shell": [
+        "test -f /Users/sawyer/gitSync/.cursor-cache/CYOPS/patches/.completed/patch-v3.3.14(P3.2.0)_ghost-daemon-self-checks.json || exit 342",
+        "test -f /Users/sawyer/gitSync/.cursor-cache/CYOPS/summaries/patch-v3.3.14(P3.2.0)_ghost-daemon-self-checks.summary.md || exit 343"
+      ]
+    },
+    "final": {
+      "git": {
+        "commit": "[FREEZE P3] Final checkpoint for GHOST Phase 3 — tunnel + daemon healthy",
+        "tag": "patch-v3.3.15(P3.COMPLETE)_ghost-phase-3-freeze"
+      },
+      "summary": "✅ Phase 3 frozen. System is healthy and synced. New branch GHOST2.0_PHASE_4 now active.",
+      "summaryFile": "/Users/sawyer/gitSync/.cursor-cache/CYOPS/summaries/patch-v3.3.15(P3.COMPLETE)_ghost-phase-3-freeze.summary.md"
+    },
+    "blockCommitOnError": true,
+    "watchConsole": true,
+    "execution": {
+      "autoReleaseTimeoutMs": 30000,
+      "onReloadHang": "Move to background and resume automatically"
+    },
+    "enforceValidationGate": true,
+    "strictRuntimeAudit": true,
+    "runDryCheck": true,
+    "forceRuntimeTrace": true,
+    "requireMutationProof": true,
+    "requireServiceUptime": true
+  }
+
+  

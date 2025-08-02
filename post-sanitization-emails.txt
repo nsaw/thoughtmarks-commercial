@@ -1,0 +1,11 @@
+sanitized-clone/tasks/patches/GHOST_2.0/GHOST_2.0_PATCH_AUDIT_REPORT.md
+sanitized-clone/tasks/patches/GHOST_2.0/patches/567/67/phase7/phase7_microservices.json
+sanitized-clone/tasks/patches/GHOST_2.0/patches/567/67/phase7/phase7_event_streaming.json
+sanitized-clone/tasks/patches/GHOST_2.0/patches/phase1/patch-v3.1.0(P1.15)_flask-server-repair.cursor-instruction.json
+sanitized-clone/dist/ThoughtPilot-Team/setup.py
+sanitized-clone/dist/ThoughtPilot-Free/setup.py
+sanitized-clone/dist/ThoughtPilot-Enterprise/setup.py
+sanitized-clone/dist/ThoughtPilot-Pro/setup.py
+sanitized-clone/patches/patch-v3.6.4(P6.04.00)_orchestrator-status-glue.json
+sanitized-clone/patches/patch-v3.6.2(P6.02.00)_monitor-status-ping-endpoint.json
+sanitized-clone/setup.py

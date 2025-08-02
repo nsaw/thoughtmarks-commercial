@@ -1,0 +1,10 @@
+./autolinter_config.json
+./init/full_gpt_runner_stack_v2.js
+./.cursor/.cursor-config copy.json
+./.cursor/cursor.json
+./.cursor/.cursor-config.json
+./.cursor/path-routing.json
+./system_monitor.py
+./.slack/apps.dev.json
+./autolinter.py
+./tasks/patches/GHOST_2.0/patches/567/67/phase7/phase7_auto_scaling.json

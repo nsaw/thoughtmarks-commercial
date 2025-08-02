@@ -1,0 +1,1 @@
+{"name": "free-demo-patch", "version": "1.0.0", "description": "Free tier demo patch", "target": "free", "mutations": {"shell": ["echo \"Free tier demo patch executed\""]}}

@@ -1,0 +1,88 @@
+{
+    "showInUI": true,
+    "blockId": "patch-v3.4.1(P4.02.00)_ghost-role-verifier",
+    "version": "patch-v3.4.1(P4.02.00)_ghost-role-verifier",
+    "description": "Adds role enforcement layer to ghost patch executor — only GPT-authored patches allowed",
+    "target": "DEV",
+    "notes": [
+      "GOAL: Prevent execution of patches unless role chain includes GPT or authorized GPT-delegated agents.",
+      "MISSION: Parse patch block → validate 'target', 'commit', 'author', or GPT token",
+      "CONTEXT: Follows relay bus setup (P4.01) — this ensures trust enforcement is real and auditable",
+      "ENFORCEMENT: Any unauthorized patch attempt is logged, blocked, and reported via relay"
+    ],
+    "to-do": [
+      "Inject `roleVerifier.ts`",
+      "Patch executor must call `verifyPatchRoles(patchBlock)` before mutation phase",
+      "Emit event via `emitRelay()` on fail"
+    ],
+    "tasks": {
+      "setup": [
+        "Ensure executor can read role field from incoming JSON",
+        "Add fallback to tag field if role not present"
+      ],
+      "mutate": [
+        "Inject `roleVerifier.ts` into ghost shell",
+        "Hook into executor to call verifier before mutation",
+        "Emit relay event on BLOCK or PASS"
+      ],
+      "verify": [
+        "Send fake patch without GPT role → expect block + log",
+        "Send real patch with GPT commit → allow"
+      ],
+      "commit": [
+        "Patch only passes if role check logs show PASS, and relay emits confirmation"
+      ]
+    },
+    "mutations": [
+      {
+        "path": "/Users/sawyer/gitSync/gpt-cursor-runner/src-nextgen/ghost/shell/roleVerifier.ts",
+        "contents": "// Role Verifier — GHOST Trust Enforcement\nimport { emitPatchComplete } from './relayCore';\n\nconst allowedRoles = ['GPT', 'GPT2', 'GHOST', 'COACH'];\n\nexport function verifyPatchRoles(patch: any): boolean {\n  const role = patch?.git?.commit?.toUpperCase() || '';\n  const tag = patch?.tag?.toUpperCase() || '';\n  const match = allowedRoles.some(r => role.includes(r) || tag.includes(r));\n  if (!match) {\n    console.error('[RoleVerifier] ❌ PATCH BLOCKED — unauthorized role');\n    emitPatchComplete('BLOCKED_UNAUTHORIZED_ROLE');\n    return false;\n  }\n  console.log(`[RoleVerifier] ✅ PATCH PASSED: role = ${role || tag}`);\n  return true;\n}"
+      },
+      {
+        "path": "/Users/sawyer/gitSync/gpt-cursor-runner/src-nextgen/ghost/shell/executor.ts",
+        "contents": "// GHOST Patch Executor — Role Check Injected\nimport { verifyPatchRoles } from './roleVerifier';\n\nexport async function runExecutor() {\n  // load patch block...\n  const patch = loadNextPatch();\n  if (!verifyPatchRoles(patch)) return;\n  applyPatch(patch);\n}"
+      }
+    ],
+    "preCommit": {
+      "backup": {
+        "path": "/Users/sawyer/gitSync/_backups/gpt-cursor-runner/",
+        "file": "20250727_patch-v3.4.1(P4.02.00)_ghost-role-verifier_backup_gpt-cursor-runner.tar.gz"
+      },
+      "shell": [
+        "echo 'Injecting GPT trust enforcement layer...'"
+      ]
+    },
+    "postMutationBuild": {
+      "shell": [
+        "timeout 60s tsc --noEmit || exit 411",
+        "timeout 60s eslint . --ext .ts,.tsx --max-warnings=0 || exit 412",
+        "timeout 180s yarn test:unit --watchAll=false || exit 413"
+      ]
+    },
+    "validate": {
+      "shell": [
+        "grep -q 'PATCH PASSED' /Users/sawyer/gitSync/.cursor-cache/CYOPS/logs/role-verifier.log || exit 414"
+      ]
+    },
+    "final": {
+      "git": {
+        "commit": "[PATCH P4.02.00] ghost-role-verifier — enforce GPT-only patch trust",
+        "tag": "patch-v3.4.1(P4.02.00)_ghost-role-verifier"
+      },
+      "summary": "✅ patch-v3.4.1(P4.02.00)_ghost-role-verifier: Ghost now blocks non-GPT patch executions and emits relay alerts on failure.",
+      "summaryFile": "/Users/sawyer/gitSync/.cursor-cache/CYOPS/summaries/patch-v3.4.1(P4.02.00)_ghost-role-verifier.summary.md"
+    },
+    "blockCommitOnError": true,
+    "watchConsole": true,
+    "execution": {
+      "autoReleaseTimeoutMs": 30000,
+      "onReloadHang": "Move to background and resume automatically"
+    },
+    "enforceValidationGate": true,
+    "strictRuntimeAudit": true,
+    "runDryCheck": true,
+    "forceRuntimeTrace": true,
+    "requireMutationProof": true,
+    "requireServiceUptime": true
+  }
+  
