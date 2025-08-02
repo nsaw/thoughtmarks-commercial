@@ -3,7 +3,7 @@ AppName=ThoughtPilot Team
 AppVersion=1.0.0
 DefaultDirName={autopf}\ThoughtPilot-Team
 DefaultGroupName=ThoughtPilot Team
-OutputDir=../distributions/windows-installers
+OutputDir=distributions/windows-installers
 OutputBaseFilename=thoughtpilot-team-installer
 Compression=lzma
 SolidCompression=yes
@@ -19,7 +19,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1; Check: not IsAdminInstallMode
 
 [Files]
-Source: "../clean-tier-packages/thoughtpilot-team/*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "clean-tier-packages/thoughtpilot-team/*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\ThoughtPilot Team"; Filename: "{app}\thoughtpilot.exe"
