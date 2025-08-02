@@ -40,14 +40,18 @@ jobs:
               # Create destination directory
               New-Item -ItemType Directory -Path $destDir -Force | Out-Null
               
-              # Copy files excluding DEV content
+              # Copy files excluding DEV content and cache directories
               Get-ChildItem -Path $sourceDir -Recurse | Where-Object {
                 $_.Name -notmatch '\.(md|json|log)$' -and
                 $_.Name -notmatch 'summary-' -and
                 $_.Name -notmatch 'patch-' -and
                 $_.Name -notmatch '\.cursor-cache' -and
                 $_.Name -notmatch '\.logs' -and
-                $_.Name -notmatch '\.heartbeat'
+                $_.Name -notmatch '\.heartbeat' -and
+                $_.Name -notmatch '\.mypy_cache' -and
+                $_.Name -notmatch '\.pytest_cache' -and
+                $_.Name -notmatch '__pycache__' -and
+                $_.Name -notmatch '\.git'
               } | ForEach-Object {
                 $relativePath = $_.FullName.Substring($sourceDir.Length + 1)
                 $destPath = Join-Path $destDir $relativePath

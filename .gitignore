@@ -37,4 +37,7 @@ __pycache__/
 
 # Misc
 *.bak
-*.tmp 
+*.tmp # Cache directories
+.mypy_cache/
+.pytest_cache/
+__pycache__/
