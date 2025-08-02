@@ -1,0 +1,116 @@
+name: Windows Installer Build (BRUTAL REALITY)
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-windows-installers:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Inno Setup
+        uses: crazy-max/ghaction-inno-setup@v3
+        with:
+          iscc-path: 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
+      
+      - name: Create build directories
+        run: |
+          mkdir -p distributions/windows-installers
+          mkdir -p build-logs
+      
+      - name: Build .exe installers for all tiers
+        run: |
+          echo 'BRUTAL: Building Windows installers for all tiers...'
+          $tiers = 'free','pro','team','enterprise'
+          $successCount = 0
+          $failureCount = 0
+          
+          foreach ($tier in $tiers) {
+            echo "Building $tier..."
+            $logFile = "build-logs/iscc-$tier-gh-actions.log"
+            
+            # Build with logging
+            iscc installer-scripts/windows/thoughtpilot-$tier.iss | Tee-Object -FilePath $logFile
+            
+            # BRUTAL VALIDATION: Check if installer was created
+            $installer = Get-ChildItem -Path distributions/windows-installers -Filter "thoughtpilot-$tier-installer-*.exe" | Select-Object -First 1
+            
+            if ($installer) {
+              $size = (Get-Item $installer.FullName).Length
+              echo "✅ $tier installer created: $($installer.Name) ($size bytes)"
+              
+              # Check for errors in log
+              $errors = Get-Content $logFile | Select-String -Pattern 'error|failed|exception' -CaseSensitive:$false
+              if ($errors) {
+                echo "❌ $tier build FAILED - errors in log:"
+                $errors | ForEach-Object { echo "  $_" }
+                $failureCount++
+              } else {
+                echo "  ✅ $tier build log clean"
+                $successCount++
+              }
+            } else {
+              echo "❌ $tier installer not created - build failed"
+              $failureCount++
+            }
+          }
+          
+          echo "Build Summary: $successCount successful, $failureCount failed"
+          
+          # FAIL PIPELINE if any builds failed
+          if ($failureCount -gt 0) {
+            echo "❌ BRUTAL: $failureCount installer builds failed - FAILING PIPELINE"
+            exit 1
+          }
+      
+      - name: Archive Installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: distributions/windows-installers/*.exe
+          retention-days: 30
+      
+      - name: Archive Build Logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-logs
+          path: build-logs/iscc-*-gh-actions.log
+          retention-days: 30
+      
+      - name: BRUTAL: Final validation of artifacts
+        run: |
+          echo 'BRUTAL: Validating all artifacts before completion...'
+          $tiers = 'free','pro','team','enterprise'
+          $missingCount = 0
+          
+          foreach ($tier in $tiers) {
+            $installer = Get-ChildItem -Path distributions/windows-installers -Filter "thoughtpilot-$tier-installer-*.exe" | Select-Object -First 1
+            if (-not $installer) {
+              echo "❌ Missing $tier .exe installer - FAILING PIPELINE"
+              $missingCount++
+            } else {
+              echo "✅ $tier installer validated: $($installer.Name)"
+            }
+          }
+          
+          if ($missingCount -gt 0) {
+            echo "❌ BRUTAL: $missingCount missing installers - FAILING PIPELINE"
+            exit 1
+          }
+          
+          echo '✅ All Windows installers validated successfully'
+      
+      - name: Summary
+        run: |
+          echo '=========================================='
+          echo '✅ Windows installers built with BRUTAL validation'
+          echo '✅ All artifacts uploaded and validated'
+          echo '✅ Pipeline completed successfully'
+          echo '==========================================' 
