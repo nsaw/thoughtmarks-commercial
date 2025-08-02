@@ -1,0 +1,86 @@
+{
+  "showInUI": true,
+  "blockId": "patch-v1.1.14(P4.02.05)_halt-windows-pipeline-requirements-decision",
+  "description": "Critical flaw identified: Windows installer pipeline is building for config-only packages. Halt pipeline, summarize findings, and require a project requirements decision before further CI/CD work.",
+  "target": "DEV",
+  "version": "v1.1.14(P4.02.05)",
+  "dependencies": [
+    "patch-v1.1.13(P4.02.04)_windows-pipeline-cache-fix-monitor"
+  ],
+  "prerequisites": [
+    "Windows CI/CD pipeline has failed 4 times",
+    "Critical flaw: Attempting to build installers for configuration-only packages"
+  ],
+  "preMutationValidation": {
+    "shell": [
+      "echo '🚨 CRITICAL: Four consecutive CI/CD failures detected. Stopping pipeline for root cause review.'"
+    ]
+  },
+  "mutations": {
+    "shell": [
+      "# 1. Halt any auto-triggers or further workflow runs for Windows installer builds",
+      "echo 'Halted Windows pipeline triggers. No further CI/CD runs until requirements are reviewed.'",
+      "# 2. Summarize current findings",
+      "echo 'SUMMARY: Clean-tier-packages only contain config files (JSON, YAML, patch, flags), no executables or installable applications. Inno Setup expects real software, not configs.'",
+      "echo 'Root cause: Pipeline is targeting configuration packages, not actual applications. Cannot create .exe installers for configs.'"
+    ]
+  },
+  "testing": {
+    "shell": [
+      "# Confirm no CI/CD pipeline runs for Windows are active",
+      "echo 'Check GitHub Actions for paused/running Windows workflows.'"
+    ]
+  },
+  "nextSteps": [
+    "1. Immediately pause/disable Windows installer pipeline runs.",
+    "2. Notify project stakeholders and require a decision:",
+    "   a. Are we meant to distribute only configuration packages, or actual applications?",
+    "   b. If configurations only: Switch strategy to self-extracting archives, PowerShell scripts, or config managers.",
+    "   c. If actual software is needed: Build real executables for each tier before attempting installer creation.",
+    "3. Document this finding in the main CHANGELOG and project roadmap.",
+    "4. Do not resume CI/CD work for Windows until requirements and distribution method are clarified."
+  ],
+  "postMutationBuild": {
+    "shell": [
+      "echo '✅ Windows pipeline halted. Awaiting requirements decision.'"
+    ]
+  },
+  "documentation": {
+    "summary": "Phase 4.02.05: Halted Windows installer pipeline after critical discovery—no executables to build. Project decision required: distribute configs or real applications? Awaiting next step from stakeholder/owner.",
+    "summaryFile": "/Users/sawyer/gitSync/.cursor-cache/CYOPS/summaries/summary-phase4.02.05-windows-pipeline-requirements-decision.md"
+  },
+  "successCriteria": [
+    "No further pipeline runs for Windows installers are triggered",
+    "Stakeholders notified and decision on project requirements is made",
+    "Strategy realigned for config/package distribution or actual application installers"
+  ],
+  "rollbackPlan": [
+    "Re-enable pipeline after requirements clarification and content changes",
+    "Update Inno Setup scripts and workflow for new approach"
+  ],
+  "validate": {
+    "shell": [
+      "echo 'No .exe artifacts produced until requirements clarified.'"
+    ]
+  },
+  "final": {
+    "git": {
+      "commit": "Phase 4.02.05: Windows installer pipeline halted pending requirements decision.",
+      "tag": "CYOPS_PHASE4.02.05_WIN_PIPELINE_HALTED"
+    },
+    "summary": "✅ Windows pipeline halted, critical flaw documented. No further CI/CD runs until project requirements are decided. See summary for details.",
+    "summaryFile": "/Users/sawyer/gitSync/.cursor-cache/CYOPS/summaries/summary-phase4.02.05-windows-pipeline-requirements-decision.md"
+  },
+  "blockCommitOnError": true,
+  "watchConsole": true,
+  "execution": {
+    "autoReleaseTimeoutMs": 30000,
+    "onReloadHang": "Move to background and resume automatically"
+  },
+  "enforceValidationGate": true,
+  "strictRuntimeAudit": true,
+  "runDryCheck": true,
+  "forceRuntimeTrace": true,
+  "requireMutationProof": true,
+  "requireServiceUptime": true
+} 
